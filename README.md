@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tienda de ropa autoadministrable
 
-## Getting Started
+Base inicial del plan tecnico para una tienda de ropa en **Next.js + Vercel + Supabase**.
 
-First, run the development server:
+## Incluye en esta primera entrega
+
+- Sitio publico base: `app/page.tsx`, `app/tienda/page.tsx`, `app/producto/[slug]/page.tsx`, `app/carrito/page.tsx`
+- Login admin por magic link: `app/login/page.tsx`
+- Panel inicial: `app/admin/page.tsx` y `app/admin/productos/page.tsx`
+- API de productos con validacion Zod: `app/api/productos/route.ts`
+- Configuracion Supabase cliente/server/admin: `lib/supabase/*`
+- Esquema SQL inicial con RLS base: `supabase/schema.sql`
+
+## Ejecutar local
+
+1. Copia variables:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Completa valores de Supabase en `.env.local`.
+   - Para CRUD local con Podman, agrega `DATABASE_URL=postgresql://tienda_user:tienda_pass@localhost:5432/tienda`
+3. Instala dependencias y levanta el proyecto:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## PostgreSQL con Podman (persistente)
 
-## Learn More
+Crear volumen + contenedor:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+podman volume create tienda_pgdata
+podman run -d --name tienda-postgres -e POSTGRES_DB=tienda -e POSTGRES_USER=tienda_user -e POSTGRES_PASSWORD=tienda_pass -p 5432:5432 -v tienda_pgdata:/var/lib/postgresql/data docker.io/library/postgres:16
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Cargar esquema inicial:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+podman cp db/schema.sql tienda-postgres:/tmp/schema.sql
+podman exec tienda-postgres psql -U tienda_user -d tienda -f /tmp/schema.sql
+```
 
-## Deploy on Vercel
+El volumen `tienda_pgdata` mantiene los datos aunque borres el contenedor.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## CRUD de productos
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `GET /api/productos`
+- `POST /api/productos`
+- `GET /api/productos/:id`
+- `PATCH /api/productos/:id`
+- `DELETE /api/productos/:id`
+
+## Deploy recomendado
+
+- **Rama `main`**: produccion en Vercel con proyecto Supabase prod.
+- **Rama `development`**: preview en Vercel con Supabase staging.
+- Cargar variables de entorno separadas por ambiente desde panel de Vercel.
+
+## Proximos pasos del plan
+
+- Conectar CRUD de productos del admin a Supabase real.
+- Implementar carga de imagenes en bucket `product-images`.
+- Agregar checkout, pedidos y estados de pedido.

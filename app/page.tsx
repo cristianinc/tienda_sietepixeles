@@ -1,65 +1,86 @@
 import Image from "next/image";
+import Link from "next/link";
+import { ProductCard } from "@/components/tienda/ProductCard";
+import { getCategoryGroups } from "@/lib/category-groups";
+import { getCatalogProducts } from "@/lib/products";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [products, categoryGroups] = await Promise.all([
+    getCatalogProducts(8),
+    getCategoryGroups(),
+  ]);
+  const featured = products.filter((product) => product.is_featured).slice(0, 4);
+  const bestSellers = [...products]
+    .sort(
+      (a, b) =>
+        b.variants.reduce((acc, variant) => acc + (12 - variant.stock), 0) -
+        a.variants.reduce((acc, variant) => acc + (12 - variant.stock), 0),
+    )
+    .slice(0, 4);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-20">
+      <section className="relative overflow-hidden rounded-[2rem] border border-[var(--color-muted)] bg-gradient-to-br from-[var(--color-sand)] via-[var(--color-cream)] to-[var(--color-rose)] p-8 md:p-12">
+        <div className="absolute -right-16 -top-12 h-56 w-56 rounded-full bg-white/30 blur-2xl" />
+        <div className="grid items-center gap-8 md:grid-cols-2">
+          <div className="space-y-5 animate-fade-up">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-[var(--color-soft-ink)]">Nueva temporada</p>
+          <h1 className="font-serif text-4xl font-semibold leading-tight sm:text-5xl">Descubre prendas que elevan tu estilo todos los dias.</h1>
+          <p className="max-w-lg text-[var(--color-soft-ink)]">Te ayudamos a encontrar outfits que combinan comodidad, elegancia y tendencia. Entra a la tienda y enamorate de la coleccion.</p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/tienda" className="inline-flex rounded-full bg-[var(--color-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-clay)]">Comprar ahora</Link>
+            <Link href="/tienda" className="inline-flex rounded-full border border-[var(--color-ink)] px-6 py-3 text-sm font-semibold">Ver catalogo</Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-3xl border border-white/60 shadow-2xl animate-fade-up-delayed">
+            <Image src={featured[0]?.image_url ?? "/images/logo.jpg"} alt="Editorial de temporada" fill className="object-cover" />
+          </div>
         </div>
-      </main>
+      </section>
+
+      <section className="space-y-5">
+        <h2 className="font-serif text-3xl">Categorias destacadas</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {categoryGroups.map((group) => (
+            <Link key={group.id} href={`/agrupador/${group.slug}`} className="rounded-2xl border border-[var(--color-muted)] bg-white/70 px-5 py-8 text-center transition hover:-translate-y-1 hover:border-[var(--color-clay)]">
+              <span className="block text-sm font-semibold uppercase tracking-[0.16em]">{group.name}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="font-serif text-3xl">Destacados</h2>
+          <Link href="/destacados" className="text-sm font-semibold text-[var(--color-clay)]">Ver todos</Link>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {featured.map((product) => (
+            <ProductCard key={product.id} product={product} showVariantSelector />
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="font-serif text-3xl">Mas vendidos</h2>
+          <Link href="/tienda" className="text-sm font-semibold text-[var(--color-clay)]">Ver todos</Link>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {bestSellers.map((product) => (
+            <ProductCard key={`home-best-${product.id}`} product={product} showVariantSelector />
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-[var(--color-muted)] bg-white p-8 text-center sm:p-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-soft-ink)]">Compra segura</p>
+        <h3 className="mt-3 font-serif text-3xl">Envios a todo Chile y cambios faciles</h3>
+        <p className="mx-auto mt-3 max-w-2xl text-[var(--color-soft-ink)]">Recibe tus prendas en pocos dias y compra con confianza. Nuestro catalogo se actualiza cada semana con nuevos ingresos.</p>
+        <Link href="/tienda" className="mt-6 inline-flex rounded-full bg-[var(--color-ink)] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-clay)]">Ir a la tienda</Link>
+      </section>
     </div>
   );
 }
