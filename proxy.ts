@@ -33,6 +33,7 @@ export async function proxy(request: NextRequest) {
 
   const adminEmails = getAdminEmails();
   const hasAuth = Boolean(user?.email && adminEmails.includes(user.email.toLowerCase()));
+  const isMfaSetupPage = request.nextUrl.pathname === "/admin/mfa/setup";
 
   if (!hasAuth) {
     if (request.nextUrl.pathname.startsWith("/api/")) {
@@ -44,7 +45,20 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const hasMfa = assurance?.currentLevel === "aal2";
+
+  if (!hasMfa && !isMfaSetupPage) {
+    if (request.nextUrl.pathname.startsWith("/api/")) {
+      return NextResponse.json({ ok: false, error: "MFA requerido" }, { status: 403 });
+    }
+
+    const url = new URL("/login", request.url);
+    url.searchParams.set("redirect", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  return response;
 }
 
 export const config = {
