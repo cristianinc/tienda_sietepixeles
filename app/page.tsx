@@ -35,7 +35,7 @@ export default async function Home() {
           </div>
         </div>
           <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-3xl border border-white/60 shadow-2xl animate-fade-up-delayed">
-            <Image src={featured[0]?.image_url ?? "/images/logo.jpg"} alt="Editorial de temporada" fill className="object-cover" />
+            <Image src={featured[0]?.image_url ?? "/images/images-1779314653582.jpeg"} alt="Editorial de temporada" fill className="object-cover" />
           </div>
         </div>
       </section>

@@ -69,26 +69,31 @@ export async function ensureProductOptionTables() {
 
       insert into categories (name, slug, image_url, sort_order)
       values
-        ('Pantalones', 'pantalones', '/images/logo.jpg', 10),
-        ('Blusas', 'blusas', '/images/logo.jpg', 20),
-        ('Tops', 'tops', '/images/logo.jpg', 30),
-        ('Vestidos', 'vestidos', '/images/logo.jpg', 40),
-        ('Blazers', 'blazers', '/images/logo.jpg', 50),
-        ('Faldas', 'faldas', '/images/logo.jpg', 60),
-        ('Abrigos', 'abrigos', '/images/logo.jpg', 70),
-        ('Tejidos', 'tejidos', '/images/logo.jpg', 80)
+        ('Pantalones', 'pantalones', '/images/images-1779314653582.jpeg', 10),
+        ('Blusas', 'blusas', '/images/images-1779314653582.jpeg', 20),
+        ('Tops', 'tops', '/images/images-1779314653582.jpeg', 30),
+        ('Vestidos', 'vestidos', '/images/images-1779314653582.jpeg', 40),
+        ('Blazers', 'blazers', '/images/images-1779314653582.jpeg', 50),
+        ('Faldas', 'faldas', '/images/images-1779314653582.jpeg', 60),
+        ('Abrigos', 'abrigos', '/images/images-1779314653582.jpeg', 70),
+        ('Tejidos', 'tejidos', '/images/images-1779314653582.jpeg', 80)
       on conflict (slug) do nothing;
+
+      update categories set image_url = '/images/images-1779314653582.jpeg' where image_url = '/images/logo.jpg';
 
       update categories set is_active = false where slug in ('looks-de-oficina', 'basicos-premium', 'noche-y-eventos', 'nueva-temporada');
 
       insert into category_groups (name, slug, description, image_url, sort_order)
       values
-        ('Ofertas', 'ofertas', 'Productos con precio promocional vigente.', '/images/logo.jpg', 5),
-        ('Looks de oficina', 'looks-de-oficina', 'Prendas para armar outfits de trabajo: pantalones, blusas y blazers.', '/images/logo.jpg', 10),
-        ('Basicos premium', 'basicos-premium', 'Esenciales versatiles para combinar durante toda la temporada.', '/images/logo.jpg', 20),
-        ('Noche y eventos', 'noche-y-eventos', 'Vestidos, tops y prendas con presencia para ocasiones especiales.', '/images/logo.jpg', 30),
-        ('Nueva temporada', 'nueva-temporada', 'Seleccion curada con los ingresos mas recientes.', '/images/logo.jpg', 40)
+        ('Ofertas', 'ofertas', 'Productos con precio promocional vigente.', '/images/images-1779314653582.jpeg', 5),
+        ('Looks de oficina', 'looks-de-oficina', 'Prendas para armar outfits de trabajo: pantalones, blusas y blazers.', '/images/images-1779314653582.jpeg', 10),
+        ('Basicos premium', 'basicos-premium', 'Esenciales versatiles para combinar durante toda la temporada.', '/images/images-1779314653582.jpeg', 20),
+        ('Noche y eventos', 'noche-y-eventos', 'Vestidos, tops y prendas con presencia para ocasiones especiales.', '/images/images-1779314653582.jpeg', 30),
+        ('Nueva temporada', 'nueva-temporada', 'Seleccion curada con los ingresos mas recientes.', '/images/images-1779314653582.jpeg', 40)
       on conflict (slug) do nothing;
+
+      update category_groups set image_url = '/images/images-1779314653582.jpeg' where image_url = '/images/logo.jpg';
+      update products set image_url = '/images/images-1779314653582.jpeg' where image_url = '/images/logo.jpg';
 
       delete from category_group_products
       where group_id = (select id from category_groups where slug = 'ofertas');

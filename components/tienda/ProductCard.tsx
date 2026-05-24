@@ -22,7 +22,7 @@ export function ProductCard({ product, showVariantSelector = false }: Props) {
     <article className="group overflow-hidden rounded-3xl border border-[var(--color-muted)] bg-white shadow-[0_16px_40px_-30px_rgba(30,20,15,0.5)] transition hover:-translate-y-1 hover:shadow-[0_24px_56px_-28px_rgba(30,20,15,0.45)]">
       <div className="relative aspect-[4/5] overflow-hidden bg-[var(--color-sand)]/50">
         <Image
-          src={product.image_url ?? "/images/logo.jpg"}
+          src={product.image_url ?? "/images/images-1779314653582.jpeg"}
           alt={product.name}
           fill
           className="object-cover transition duration-500 group-hover:scale-105"

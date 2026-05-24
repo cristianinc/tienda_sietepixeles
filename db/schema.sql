@@ -59,26 +59,30 @@ add column if not exists sort_order integer not null default 0;
 
 insert into categories (name, slug, image_url, sort_order)
 values
-  ('Pantalones', 'pantalones', '/images/logo.jpg', 10),
-  ('Blusas', 'blusas', '/images/logo.jpg', 20),
-  ('Tops', 'tops', '/images/logo.jpg', 30),
-  ('Vestidos', 'vestidos', '/images/logo.jpg', 40),
-  ('Blazers', 'blazers', '/images/logo.jpg', 50),
-  ('Faldas', 'faldas', '/images/logo.jpg', 60),
-  ('Abrigos', 'abrigos', '/images/logo.jpg', 70),
-  ('Tejidos', 'tejidos', '/images/logo.jpg', 80)
+  ('Pantalones', 'pantalones', '/images/images-1779314653582.jpeg', 10),
+  ('Blusas', 'blusas', '/images/images-1779314653582.jpeg', 20),
+  ('Tops', 'tops', '/images/images-1779314653582.jpeg', 30),
+  ('Vestidos', 'vestidos', '/images/images-1779314653582.jpeg', 40),
+  ('Blazers', 'blazers', '/images/images-1779314653582.jpeg', 50),
+  ('Faldas', 'faldas', '/images/images-1779314653582.jpeg', 60),
+  ('Abrigos', 'abrigos', '/images/images-1779314653582.jpeg', 70),
+  ('Tejidos', 'tejidos', '/images/images-1779314653582.jpeg', 80)
 on conflict (slug) do nothing;
+
+update categories set image_url = '/images/images-1779314653582.jpeg' where image_url = '/images/logo.jpg';
 
 update categories set is_active = false where slug in ('looks-de-oficina', 'basicos-premium', 'noche-y-eventos', 'nueva-temporada');
 
 insert into category_groups (name, slug, description, image_url, sort_order)
 values
-  ('Ofertas', 'ofertas', 'Productos con precio promocional vigente.', '/images/logo.jpg', 5),
-  ('Looks de oficina', 'looks-de-oficina', 'Prendas para armar outfits de trabajo: pantalones, blusas y blazers.', '/images/logo.jpg', 10),
-  ('Basicos premium', 'basicos-premium', 'Esenciales versatiles para combinar durante toda la temporada.', '/images/logo.jpg', 20),
-  ('Noche y eventos', 'noche-y-eventos', 'Vestidos, tops y prendas con presencia para ocasiones especiales.', '/images/logo.jpg', 30),
-  ('Nueva temporada', 'nueva-temporada', 'Seleccion curada con los ingresos mas recientes.', '/images/logo.jpg', 40)
+  ('Ofertas', 'ofertas', 'Productos con precio promocional vigente.', '/images/images-1779314653582.jpeg', 5),
+  ('Looks de oficina', 'looks-de-oficina', 'Prendas para armar outfits de trabajo: pantalones, blusas y blazers.', '/images/images-1779314653582.jpeg', 10),
+  ('Basicos premium', 'basicos-premium', 'Esenciales versatiles para combinar durante toda la temporada.', '/images/images-1779314653582.jpeg', 20),
+  ('Noche y eventos', 'noche-y-eventos', 'Vestidos, tops y prendas con presencia para ocasiones especiales.', '/images/images-1779314653582.jpeg', 30),
+  ('Nueva temporada', 'nueva-temporada', 'Seleccion curada con los ingresos mas recientes.', '/images/images-1779314653582.jpeg', 40)
 on conflict (slug) do nothing;
+
+update category_groups set image_url = '/images/images-1779314653582.jpeg' where image_url = '/images/logo.jpg';
 
 delete from category_group_products
 where group_id = (select id from category_groups where slug = 'ofertas');
@@ -130,11 +134,29 @@ insert into product_colors (name, hex)
 values ('Arena', '#d8c3a5'), ('Negro', '#111111'), ('Blanco', '#ffffff'), ('Rosa', '#e9b7c2')
 on conflict (name) do nothing;
 
-insert into products (name, slug, description, price, discount_price, is_active, is_featured, image_url)
+insert into products (category_id, name, slug, description, price, discount_price, is_active, is_featured, image_url)
 values
-  ('Blazer Lino Amelia', 'blazer-lino-amelia', 'Corte relajado para uso diario y ocasiones especiales.', 49990, 42990, true, true, '/images/logo.jpg'),
-  ('Vestido Satin Noche', 'vestido-satin-noche', 'Silueta suave con caida elegante y textura luminosa.', 39990, null, true, true, '/images/logo.jpg')
-on conflict (slug) do nothing;
+  ((select id from categories where slug = 'blazers'), 'Blazer Lino Amelia', 'blazer-lino-amelia', 'Corte relajado para uso diario y ocasiones especiales.', 49990, 42990, true, true, '/images/images-1779314653582.jpeg'),
+  ((select id from categories where slug = 'vestidos'), 'Vestido Satin Noche', 'vestido-satin-noche', 'Silueta suave con caida elegante y textura luminosa.', 39990, null, true, true, '/images/images-1779314653582.jpeg'),
+  ((select id from categories where slug = 'pantalones'), 'Pantalon Wide Leg Aurora', 'pantalon-wide-leg-aurora', 'Tiro alto y pierna amplia para looks pulidos de oficina.', 35990, 31990, true, true, '/images/images-1779314653582.jpeg'),
+  ((select id from categories where slug = 'blusas'), 'Blusa Popelina Clara', 'blusa-popelina-clara', 'Popelina liviana con terminacion limpia para combinar a diario.', 28990, null, true, false, '/images/images-1779314653582.jpeg'),
+  ((select id from categories where slug = 'tops'), 'Top Canalado Emilia', 'top-canalado-emilia', 'Basico elasticado con textura canalada y calce comodo.', 19990, 16990, true, true, '/images/images-1779314653582.jpeg'),
+  ((select id from categories where slug = 'faldas'), 'Falda Midi Siena', 'falda-midi-siena', 'Falda midi con movimiento suave y cintura definida.', 32990, null, true, false, '/images/images-1779314653582.jpeg'),
+  ((select id from categories where slug = 'abrigos'), 'Trench Liviano Olivia', 'trench-liviano-olivia', 'Capa ligera para media estacion con amarra ajustable.', 59990, 49990, true, true, '/images/images-1779314653582.jpeg'),
+  ((select id from categories where slug = 'tejidos'), 'Cardigan Suave Martina', 'cardigan-suave-martina', 'Tejido suave de botonadura frontal para uso versatil.', 34990, null, true, false, '/images/images-1779314653582.jpeg'),
+  ((select id from categories where slug = 'pantalones'), 'Jeans Recto Elisa', 'jeans-recto-elisa', 'Denim recto de calce clasico para armar outfits casuales.', 42990, null, true, false, '/images/images-1779314653582.jpeg'),
+  ((select id from categories where slug = 'vestidos'), 'Vestido Camisero Luna', 'vestido-camisero-luna', 'Vestido camisero con cinturon y estructura relajada.', 45990, 39990, true, true, '/images/images-1779314653582.jpeg')
+on conflict (slug) do update set
+  category_id = excluded.category_id,
+  description = excluded.description,
+  price = excluded.price,
+  discount_price = excluded.discount_price,
+  is_active = excluded.is_active,
+  is_featured = excluded.is_featured,
+  image_url = excluded.image_url,
+  updated_at = now();
+
+update products set image_url = '/images/images-1779314653582.jpeg' where image_url = '/images/logo.jpg';
 
 update products p set category_id = c.id from categories c where p.category_id is null and c.slug = 'pantalones' and (lower(p.name) like '%pantalon%' or lower(p.name) like '%pantalón%' or lower(p.name) like '%jeans%');
 update products p set category_id = c.id from categories c where p.category_id is null and c.slug = 'blusas' and lower(p.name) like '%blusa%';
@@ -175,4 +197,68 @@ on conflict (sku) do nothing;
 
 insert into product_variants (product_id, size, color, stock, sku)
 select p.id, 'M', 'Negro', 7, 'VEST-M-NEG' from products p where p.slug = 'vestido-satin-noche'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'S', 'Negro', 6, 'PANT-AUR-S-NEG' from products p where p.slug = 'pantalon-wide-leg-aurora'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'M', 'Negro', 9, 'PANT-AUR-M-NEG' from products p where p.slug = 'pantalon-wide-leg-aurora'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'S', 'Blanco', 10, 'BLUS-CLA-S-BLA' from products p where p.slug = 'blusa-popelina-clara'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'M', 'Blanco', 8, 'BLUS-CLA-M-BLA' from products p where p.slug = 'blusa-popelina-clara'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'S', 'Rosa', 7, 'TOP-EMI-S-ROS' from products p where p.slug = 'top-canalado-emilia'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'M', 'Rosa', 11, 'TOP-EMI-M-ROS' from products p where p.slug = 'top-canalado-emilia'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'M', 'Arena', 5, 'FAL-SIE-M-ARE' from products p where p.slug = 'falda-midi-siena'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'L', 'Arena', 4, 'FAL-SIE-L-ARE' from products p where p.slug = 'falda-midi-siena'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'M', 'Arena', 3, 'TRE-OLI-M-ARE' from products p where p.slug = 'trench-liviano-olivia'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'L', 'Arena', 2, 'TRE-OLI-L-ARE' from products p where p.slug = 'trench-liviano-olivia'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'M', 'Blanco', 8, 'CAR-MAR-M-BLA' from products p where p.slug = 'cardigan-suave-martina'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'L', 'Blanco', 5, 'CAR-MAR-L-BLA' from products p where p.slug = 'cardigan-suave-martina'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'S', 'Negro', 6, 'JEA-ELI-S-NEG' from products p where p.slug = 'jeans-recto-elisa'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'M', 'Negro', 6, 'JEA-ELI-M-NEG' from products p where p.slug = 'jeans-recto-elisa'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'S', 'Blanco', 4, 'VES-LUN-S-BLA' from products p where p.slug = 'vestido-camisero-luna'
+on conflict (sku) do nothing;
+
+insert into product_variants (product_id, size, color, stock, sku)
+select p.id, 'M', 'Blanco', 6, 'VES-LUN-M-BLA' from products p where p.slug = 'vestido-camisero-luna'
 on conflict (sku) do nothing;

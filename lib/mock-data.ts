@@ -8,7 +8,7 @@ export const mockProducts: Product[] = [
     description: "Corte relajado para uso diario y ocasiones especiales.",
     price: 49990,
     discountPrice: 42990,
-    imageUrl: "/images/logo.jpg",
+    imageUrl: "/images/images-1779314653582.jpeg",
     isFeatured: true,
     variants: [
       { id: "v1", size: "S", color: "Arena", stock: 5, sku: "BLAZ-S-ARE" },
@@ -21,7 +21,7 @@ export const mockProducts: Product[] = [
     name: "Vestido Satin Noche",
     description: "Silueta suave con caida elegante y textura luminosa.",
     price: 39990,
-    imageUrl: "/images/logo.jpg",
+    imageUrl: "/images/images-1779314653582.jpeg",
     isFeatured: true,
     variants: [
       { id: "v3", size: "S", color: "Negro", stock: 4, sku: "VEST-S-NEG" },

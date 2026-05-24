@@ -2,6 +2,8 @@ import { OptionManager } from "@/components/admin/OptionManager";
 import { ensureProductOptionTables } from "@/lib/admin-options";
 import { getDb } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminSizesPage() {
   await ensureProductOptionTables();
   const db = getDb();

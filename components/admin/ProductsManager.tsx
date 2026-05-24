@@ -29,7 +29,7 @@ const emptyForm: ProductForm = {
   description: "",
   price: "",
   discount_price: "",
-  image_url: "/images/logo.jpg",
+  image_url: "/images/images-1779314653582.jpeg",
   is_active: true,
   is_featured: false,
   variants: [{ ...emptyVariant }],

@@ -21,7 +21,7 @@ export default async function ProductPage({
     <section className="grid gap-8 lg:grid-cols-2">
       <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-[var(--color-muted)] bg-white">
         <Image
-          src={product.image_url ?? "/images/logo.jpg"}
+          src={product.image_url ?? "/images/images-1779314653582.jpeg"}
           alt={product.name}
           fill
           className="object-cover"

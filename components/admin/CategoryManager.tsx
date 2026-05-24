@@ -19,7 +19,7 @@ const emptyForm: Category = {
   id: 0,
   name: "",
   slug: "",
-  image_url: "/images/logo.jpg",
+  image_url: "/images/images-1779314653582.jpeg",
   sort_order: 0,
   is_active: true,
 };
