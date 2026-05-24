@@ -1,10 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const [user, setUser] = useState("admin");
-  const [code, setCode] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -13,52 +14,50 @@ export default function LoginPage() {
     setIsLoading(true);
     setMessage("");
 
-    const response = await fetch("/api/auth/local", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user, code }),
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
     setIsLoading(false);
 
-    if (response.ok) {
-      window.location.href = "/admin";
+    if (!error) {
+      const redirect = new URLSearchParams(window.location.search).get("redirect");
+      window.location.href = redirect?.startsWith("/admin") ? redirect : "/admin";
       return;
     }
 
-    const data = (await response.json()) as { message?: string };
-    setMessage(data.message ?? "No se pudo iniciar sesion.");
+    setMessage("Correo o contrasena incorrectos.");
   }
 
   return (
     <section className="mx-auto max-w-md space-y-6 rounded-2xl border border-[var(--color-muted)] bg-white p-6">
-      <h1 className="font-serif text-3xl">Acceso admin</h1>
+      <h1 className="font-serif text-3xl">Acceso seguro admin</h1>
       <form onSubmit={signIn} className="space-y-3">
         <input
           required
-          value={user}
-          onChange={(event) => setUser(event.target.value)}
-          placeholder="Usuario"
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="Correo administrador"
           className="w-full rounded-xl border border-[var(--color-muted)] px-4 py-3"
         />
         <input
           required
           type="password"
-          inputMode="numeric"
-          value={code}
-          onChange={(event) => setCode(event.target.value)}
-          placeholder="Codigo de autorizacion"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Contrasena"
           className="w-full rounded-xl border border-[var(--color-muted)] px-4 py-3"
         />
         <button type="submit" className="w-full rounded-xl bg-[var(--color-ink)] px-4 py-3 text-white">
           {isLoading ? "Ingresando..." : "Ingresar"}
         </button>
       </form>
-      <div className="rounded-xl bg-[var(--color-cream)] p-4 text-sm text-[var(--color-soft-ink)]">
-        <p>Acceso local de prueba:</p>
-        <p>Usuario: admin</p>
-        <p>Codigo: 482916</p>
-      </div>
+      <p className="rounded-xl bg-[var(--color-cream)] p-4 text-sm text-[var(--color-soft-ink)]">
+        Usa un usuario creado en Supabase Auth y autorizado en la variable ADMIN_EMAILS.
+      </p>
       {message ? <p className="text-sm text-[var(--color-soft-ink)]">{message}</p> : null}
     </section>
   );
