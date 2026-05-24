@@ -2,18 +2,36 @@ import { Pool } from "pg";
 
 let pool: Pool | null = null;
 
+function getDatabaseUrl() {
+  return (
+    process.env.DATABASE_URL ??
+    process.env.POSTGRES_URL_NON_POOLING ??
+    process.env.POSTGRES_URL ??
+    process.env.POSTGRES_PRISMA_URL
+  );
+}
+
+function normalizeConnectionString(databaseUrl: string) {
+  const url = new URL(databaseUrl);
+  url.searchParams.delete("sslmode");
+  return url.toString();
+}
+
 export function getDb() {
-  const databaseUrl = process.env.DATABASE_URL;
+  const databaseUrl = getDatabaseUrl();
 
   if (!databaseUrl) {
     throw new Error(
-      "DATABASE_URL no esta definida. Configura .env.local con tu conexion PostgreSQL.",
+      "No hay conexion PostgreSQL configurada. Define DATABASE_URL, POSTGRES_URL_NON_POOLING o POSTGRES_URL.",
     );
   }
 
   if (!pool) {
+    const usesSsl = databaseUrl.includes("supabase.com") || databaseUrl.includes("sslmode=require");
+
     pool = new Pool({
-      connectionString: databaseUrl,
+      connectionString: usesSsl ? normalizeConnectionString(databaseUrl) : databaseUrl,
+      ssl: usesSsl ? { rejectUnauthorized: false } : undefined,
     });
   }
 
