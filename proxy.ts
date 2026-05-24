@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 function getAdminEmails() {
-  return (process.env.ADMIN_EMAILS ?? "")
+  return (process.env.ADMIN_EMAILS ?? "cristian.inc@gmail.com")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
@@ -42,6 +42,9 @@ export async function proxy(request: NextRequest) {
 
     const url = new URL("/login", request.url);
     url.searchParams.set("redirect", request.nextUrl.pathname);
+    if (user) {
+      url.searchParams.set("error", "unauthorized");
+    }
     return NextResponse.redirect(url);
   }
 

@@ -8,12 +8,43 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
   const [mfaFactorId, setMfaFactorId] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).get("error") === "unauthorized"
+      ? "Tu correo no esta autorizado como administrador."
+      : "";
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   function getRedirectPath() {
     const redirect = new URLSearchParams(window.location.search).get("redirect");
     return redirect?.startsWith("/admin") ? redirect : "/admin";
+  }
+
+  async function continueAfterPassword() {
+    const supabase = createClient();
+    const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (assurance?.currentLevel === "aal2") {
+      window.location.assign(getRedirectPath());
+      return;
+    }
+
+    const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+    const verifiedTotp = factors?.totp?.[0];
+
+    if (factorsError) {
+      setMessage("No se pudo revisar la configuracion MFA.");
+      return;
+    }
+
+    if (!verifiedTotp) {
+      setMessage("Sesion correcta. Redirigiendo a configurar autenticador...");
+      window.location.assign("/admin/mfa/setup");
+      return;
+    }
+
+    setMfaFactorId(verifiedTotp.id);
+    setMessage("Ingresa el codigo de tu autenticador.");
   }
 
   async function signIn(event: FormEvent) {
@@ -33,29 +64,8 @@ export default function LoginPage() {
       return;
     }
 
-    const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (assurance?.currentLevel === "aal2") {
-      window.location.href = getRedirectPath();
-      return;
-    }
-
-    const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-    const verifiedTotp = factors?.totp?.[0];
-
+    await continueAfterPassword();
     setIsLoading(false);
-
-    if (factorsError) {
-      setMessage("No se pudo revisar la configuracion MFA.");
-      return;
-    }
-
-    if (!verifiedTotp) {
-      window.location.href = "/admin/mfa/setup";
-      return;
-    }
-
-    setMfaFactorId(verifiedTotp.id);
-    setMessage("Ingresa el codigo de tu autenticador.");
   }
 
   async function verifyMfa(event: FormEvent) {
@@ -72,7 +82,7 @@ export default function LoginPage() {
     setIsLoading(false);
 
     if (!error) {
-      window.location.href = getRedirectPath();
+      window.location.assign(getRedirectPath());
       return;
     }
 
