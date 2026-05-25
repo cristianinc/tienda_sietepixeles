@@ -109,7 +109,7 @@ export function CartView() {
           </p>
         </div>
         <a
-          href={`https://wa.me/?text=${orderMessage}`}
+          href={`https://wa.me/56920560364?text=${orderMessage}`}
           target="_blank"
           rel="noreferrer"
           className="mt-6 flex w-full justify-center rounded-full bg-[var(--color-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-clay)]"

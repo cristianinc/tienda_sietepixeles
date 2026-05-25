@@ -130,9 +130,6 @@ export default function LoginPage() {
           </button>
         </form>
       )}
-      <p className="rounded-xl bg-[var(--color-cream)] p-4 text-sm text-[var(--color-soft-ink)]">
-        Usa un usuario creado en Supabase Auth, autorizado en ADMIN_EMAILS y protegido con autenticador.
-      </p>
       {message ? <p className="text-sm text-[var(--color-soft-ink)]">{message}</p> : null}
     </section>
   );

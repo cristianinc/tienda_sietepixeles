@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CategoryGroupManager } from "@/components/admin/CategoryGroupManager";
 import { getCategoryGroups } from "@/lib/category-groups";
 import { ensureProductOptionTables } from "@/lib/admin-options";
@@ -25,7 +26,12 @@ export default async function AdminCategoryGroupsPage() {
 
   return (
     <section className="space-y-6">
-      <h1 className="font-serif text-4xl">Agrupadores de productos</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-serif text-4xl">Agrupadores de productos</h1>
+        <Link href="/admin" className="rounded-full border border-[var(--color-muted)] px-5 py-2 text-sm font-semibold">
+          Volver al panel
+        </Link>
+      </div>
       <CategoryGroupManager initialGroups={groups} initialProducts={products} />
     </section>
   );

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CartNavLink } from "@/components/cart/CartNavLink";
+import { AdminSessionNav } from "@/components/layout/AdminSessionNav";
 
 const links = [
   { href: "/", label: "Inicio" },
@@ -26,6 +27,9 @@ export function Navbar() {
           ))}
           <li>
             <CartNavLink />
+          </li>
+          <li>
+            <AdminSessionNav />
           </li>
         </ul>
       </nav>
