@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import { getCartItemPrice, useCartHydrated, useCartStore } from "@/lib/cart-store";
 
 const formatPrice = (value: number) => `$${value.toLocaleString("es-CL")}`;
+const whatsappOrderPhone = (process.env.NEXT_PUBLIC_WHATSAPP_ORDER_PHONE ?? "").replace(/\D/g, "");
 
 export function CartView() {
   const { items, removeItem, updateQuantity, clearCart } = useCartStore();
@@ -108,14 +109,20 @@ export function CartView() {
             El despacho y metodo de pago se coordinan al confirmar el pedido.
           </p>
         </div>
-        <a
-          href={`https://wa.me/56920560364?text=${orderMessage}`}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-6 flex w-full justify-center rounded-full bg-[var(--color-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-clay)]"
-        >
-          Confirmar por WhatsApp
-        </a>
+        {whatsappOrderPhone ? (
+          <a
+            href={`https://wa.me/${whatsappOrderPhone}?text=${orderMessage}`}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-6 flex w-full justify-center rounded-full bg-[var(--color-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-clay)]"
+          >
+            Confirmar por WhatsApp
+          </a>
+        ) : (
+          <p className="mt-6 rounded-2xl bg-[var(--color-cream)] px-4 py-3 text-center text-sm text-[var(--color-soft-ink)]">
+            La confirmacion por WhatsApp no esta disponible.
+          </p>
+        )}
         <button
           type="button"
           onClick={clearCart}

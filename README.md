@@ -1,67 +1,41 @@
 # Tienda de ropa autoadministrable
 
-Base inicial del plan tecnico para una tienda de ropa en **Next.js + Vercel + Supabase**.
+Next.js 16 application backed directly by PostgreSQL. Production runs with exactly two long-running Compose services: `web` and `db`. It has no runtime dependency on Vercel or Supabase.
 
-## Incluye en esta primera entrega
-
-- Sitio publico base: `app/page.tsx`, `app/tienda/page.tsx`, `app/producto/[slug]/page.tsx`, `app/carrito/page.tsx`
-- Login admin por magic link: `app/login/page.tsx`
-- Panel inicial: `app/admin/page.tsx` y `app/admin/productos/page.tsx`
-- API de productos con validacion Zod: `app/api/productos/route.ts`
-- Configuracion Supabase cliente/server/admin: `lib/supabase/*`
-- Esquema SQL inicial con RLS base: `supabase/schema.sql`
-
-## Ejecutar local
-
-1. Copia variables:
+## Local development
 
 ```bash
 cp .env.example .env.local
-```
-
-2. Completa valores de Supabase en `.env.local`.
-   - Para CRUD local con Podman, agrega `DATABASE_URL=postgresql://tienda_user:tienda_pass@localhost:5432/tienda`
-3. Instala dependencias y levanta el proyecto:
-
-```bash
-npm install
+npm ci
+npm run db:init
+npm run db:seed
 npm run dev
 ```
 
-## PostgreSQL con Podman (persistente)
+For local commands, use a host-reachable `DATABASE_URL` instead of the Compose hostname `db`. Development seed data is optional and must never be applied automatically in production.
 
-Crear volumen + contenedor:
-
-```bash
-podman volume create tienda_pgdata
-podman run -d --name tienda-postgres -e POSTGRES_DB=tienda -e POSTGRES_USER=tienda_user -e POSTGRES_PASSWORD=tienda_pass -p 5432:5432 -v tienda_pgdata:/var/lib/postgresql/data docker.io/library/postgres:16
-```
-
-Cargar esquema inicial:
+Create an administrator after applying migrations:
 
 ```bash
-podman cp db/schema.sql tienda-postgres:/tmp/schema.sql
-podman exec tienda-postgres psql -U tienda_user -d tienda -f /tmp/schema.sql
+ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD='replace-this-password' npm run local:admin
 ```
 
-El volumen `tienda_pgdata` mantiene los datos aunque borres el contenedor.
+The email must also be present in `ADMIN_EMAILS`. The first login enrolls TOTP MFA.
 
-## CRUD de productos
+## Production
 
-- `GET /api/productos`
-- `POST /api/productos`
-- `GET /api/productos/:id`
-- `PATCH /api/productos/:id`
-- `DELETE /api/productos/:id`
+See [`docs/container-operations.md`](docs/container-operations.md) for build/start, migration from PostgreSQL or Supabase, administrator enrollment, backup/restore, and operational limits.
 
-## Deploy recomendado
+The canonical schema lives in `db/migrations/`. `scripts/init-db.mjs` applies each migration transactionally and records it in `schema_migrations`.
 
-- **Rama `main`**: produccion en Vercel con proyecto Supabase prod.
-- **Rama `development`**: preview en Vercel con Supabase staging.
-- Cargar variables de entorno separadas por ambiente desde panel de Vercel.
+## Verification
 
-## Proximos pasos del plan
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+docker compose config --services
+```
 
-- Conectar CRUD de productos del admin a Supabase real.
-- Implementar carga de imagenes en bucket `product-images`.
-- Agregar checkout, pedidos y estados de pedido.
+`docker compose config --services` must print only `db` and `web`.

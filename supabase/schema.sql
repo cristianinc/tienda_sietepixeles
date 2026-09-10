@@ -1,3 +1,8 @@
+-- Historical Supabase/Auth draft. Do not apply this file.
+-- The canonical PostgreSQL schema and all future changes live in db/migrations/.
+-- This file remains only to preserve prior repository history. Runtime authorization
+-- is implemented by the application with PostgreSQL-backed admin sessions.
+/*
 create table if not exists public.profiles (
   id uuid primary key,
   full_name text,
@@ -44,6 +49,7 @@ for select using (is_active = true);
 create policy "admin and editor can manage products" on public.products
 for all using ((auth.jwt() -> 'app_metadata' ->> 'role') in ('admin', 'editor'))
 with check ((auth.jwt() -> 'app_metadata' ->> 'role') in ('admin', 'editor'));
+*/
 
 create policy "public can read product variants" on public.product_variants
 for select using (true);

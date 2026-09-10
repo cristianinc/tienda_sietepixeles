@@ -7,7 +7,7 @@ export const variantSchema = z.object({
   sku: z.string().min(3),
 });
 
-export const productSchema = z.object({
+const productFieldsSchema = z.object({
   category_id: z.number().int().positive(),
   name: z.string().min(3),
   slug: z.string().min(3),
@@ -20,7 +20,53 @@ export const productSchema = z.object({
   variants: z.array(variantSchema).min(1),
 });
 
-export const updateProductSchema = productSchema.partial().refine(
-  (value) => Object.keys(value).length > 0,
-  "Debes enviar al menos un campo para actualizar",
-);
+function validateVariants(
+  variants: z.infer<typeof variantSchema>[],
+  context: z.RefinementCtx,
+) {
+  const seenVariants = new Set<string>();
+  for (const [index, variant] of variants.entries()) {
+    const key = `${variant.size.trim().toLowerCase()}|${variant.color.trim().toLowerCase()}`;
+    if (seenVariants.has(key)) {
+      context.addIssue({
+        code: "custom",
+        message: "No se permiten variantes duplicadas de talla y color",
+        path: ["variants", index],
+      });
+    }
+    seenVariants.add(key);
+  }
+}
+
+export const productSchema = productFieldsSchema.superRefine((product, context) => {
+  if (product.discount_price && product.discount_price >= product.price) {
+    context.addIssue({
+      code: "custom",
+      message: "El precio de oferta debe ser menor al precio normal",
+      path: ["discount_price"],
+    });
+  }
+
+  validateVariants(product.variants, context);
+});
+
+export const updateProductSchema = productFieldsSchema
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, "Debes enviar al menos un campo para actualizar")
+  .superRefine((product, context) => {
+    if (product.variants) {
+      validateVariants(product.variants, context);
+    }
+
+    if (
+      product.discount_price !== undefined &&
+      product.price !== undefined &&
+      product.discount_price >= product.price
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "El precio de oferta debe ser menor al precio normal",
+        path: ["discount_price"],
+      });
+    }
+  });

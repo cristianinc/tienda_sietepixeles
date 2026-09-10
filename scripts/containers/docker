@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Supabase CLI asks Docker for individual labels; Podman exposes labels as a map.
+args=()
+for argument in "$@"; do
+  argument="$(perl -pe 's/\.Label\s+"([^"]+)"/index .Labels "$1"/g' <<<"$argument")"
+  args+=("$argument")
+done
+
+exec podman "${args[@]}"

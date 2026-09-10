@@ -1,27 +1,28 @@
-import { ensureProductOptionTables } from "@/lib/admin-options";
+import { authorizeAdminRequest } from "@/lib/auth/api-authorization";
 import { getDb } from "@/lib/db";
+import { categorySchema } from "@/lib/validations/admin-options.schema";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await ensureProductOptionTables();
-  const { id } = await params;
-  const body = (await request.json()) as {
-    name?: string;
-    slug?: string;
-    image_url?: string;
-    sort_order?: number;
-    is_active?: boolean;
-  };
-  const name = body.name?.trim();
-  const slug = body.slug?.trim();
+  const authorization = await authorizeAdminRequest();
+  if ("response" in authorization) return authorization.response;
 
-  if (!name || !slug) {
-    return Response.json({ ok: false, error: "Nombre y slug son obligatorios" }, { status: 400 });
+  const { id } = await params;
+  const parsed = categorySchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return Response.json({ ok: false, errors: parsed.error.flatten() }, { status: 400 });
   }
 
   const db = getDb();
   const { rows } = await db.query(
     "update categories set name = $1, slug = $2, image_url = $3, sort_order = $4, is_active = $5 where id = $6 returning *",
-    [name, slug, body.image_url?.trim() || null, Number(body.sort_order ?? 0), body.is_active ?? true, id],
+    [
+      parsed.data.name,
+      parsed.data.slug,
+      parsed.data.image_url || null,
+      parsed.data.sort_order ?? 0,
+      parsed.data.is_active ?? true,
+      id,
+    ],
   );
 
   if (!rows[0]) return Response.json({ ok: false, error: "Categoria no encontrada" }, { status: 404 });
@@ -30,7 +31,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await ensureProductOptionTables();
+  const authorization = await authorizeAdminRequest();
+  if ("response" in authorization) return authorization.response;
+
   const { id } = await params;
   const db = getDb();
   const { rows } = await db.query("delete from categories where id = $1 returning id", [id]);

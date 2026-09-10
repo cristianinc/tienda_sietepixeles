@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { ProductsManager } from "@/components/admin/ProductsManager";
-import { ensureProductOptionTables } from "@/lib/admin-options";
 import { getDb } from "@/lib/db";
 import type { CatalogProduct } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage() {
-  await ensureProductOptionTables();
   const db = getDb();
   const [productsResult, sizesResult, colorsResult, categoriesResult] = await Promise.all([
     db.query(`

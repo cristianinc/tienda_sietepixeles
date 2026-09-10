@@ -1,3 +1,7 @@
+-- Historical bootstrap retained for compatibility only.
+-- The canonical schema lives in db/migrations/. Use `npm run db:init` to apply it
+-- and `npm run db:seed` only for explicit development data.
+/*
 create table if not exists products (
   id bigserial primary key,
   category_id bigint,
@@ -23,6 +27,26 @@ create table if not exists product_variants (
 );
 
 create index if not exists idx_product_variants_product_id on product_variants(product_id);
+create index if not exists idx_products_active_category on products(is_active, category_id);
+create index if not exists idx_product_variants_available on product_variants(product_id, stock) where stock > 0;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'products_price_positive') then
+    alter table products add constraint products_price_positive check (price > 0);
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'products_discount_price_valid') then
+    alter table products add constraint products_discount_price_valid check (
+      discount_price is null or (discount_price > 0 and discount_price < price)
+    );
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'product_variants_stock_nonnegative') then
+    alter table product_variants add constraint product_variants_stock_nonnegative check (stock >= 0);
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'product_variants_product_size_color_unique') then
+    alter table product_variants add constraint product_variants_product_size_color_unique unique (product_id, size, color);
+  end if;
+end $$;
 
 create table if not exists categories (
   id bigserial primary key,
@@ -262,3 +286,36 @@ on conflict (sku) do nothing;
 insert into product_variants (product_id, size, color, stock, sku)
 select p.id, 'M', 'Blanco', 6, 'VES-LUN-M-BLA' from products p where p.slug = 'vestido-camisero-luna'
 on conflict (sku) do nothing;
+
+create or replace view v_inventario_bot as
+select
+  v.sku as sku,
+  p.name as producto,
+  v.color as color,
+  v.size as talla,
+  coalesce(p.discount_price, p.price) as precio,
+  v.stock as stock,
+  p.is_active as activo,
+  c.name as categoria,
+  coalesce(string_agg(cg.name, ', ' order by cg.name), '') as agrupadores
+from product_variants v
+join products p on p.id = v.product_id
+left join categories c on c.id = p.category_id
+left join category_group_products cgp on cgp.product_id = p.id
+left join category_groups cg on cg.id = cgp.group_id
+group by v.id, p.id, c.id;
+
+create table if not exists agent_tool_calls (
+  id bigserial primary key,
+  tool_name text not null check (tool_name in ('search_products', 'get_product_details', 'check_inventory', 'get_store_information')),
+  input jsonb not null,
+  output jsonb,
+  status text not null check (status in ('success', 'error')),
+  error_code text,
+  duration_ms integer not null check (duration_ms >= 0),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_agent_tool_calls_created_at on agent_tool_calls(created_at desc);
+create index if not exists idx_agent_tool_calls_tool_status on agent_tool_calls(tool_name, status);
+*/

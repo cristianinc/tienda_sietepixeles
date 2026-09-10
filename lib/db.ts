@@ -6,8 +6,7 @@ function getDatabaseUrl() {
   return (
     process.env.DATABASE_URL ??
     process.env.POSTGRES_URL_NON_POOLING ??
-    process.env.POSTGRES_URL ??
-    process.env.POSTGRES_PRISMA_URL
+      process.env.POSTGRES_URL
   );
 }
 
@@ -27,7 +26,7 @@ export function getDb() {
   }
 
   if (!pool) {
-    const usesSsl = databaseUrl.includes("supabase.com") || databaseUrl.includes("sslmode=require");
+    const usesSsl = databaseUrl.includes("sslmode=require");
 
     pool = new Pool({
       connectionString: usesSsl ? normalizeConnectionString(databaseUrl) : databaseUrl,

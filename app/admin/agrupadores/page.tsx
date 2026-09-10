@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { CategoryGroupManager } from "@/components/admin/CategoryGroupManager";
 import { getCategoryGroups } from "@/lib/category-groups";
-import { ensureProductOptionTables } from "@/lib/admin-options";
 import { getDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminCategoryGroupsPage() {
   const groups = await getCategoryGroups(true);
-  await ensureProductOptionTables();
   const db = getDb();
   const { rows: products } = await db.query(
     `

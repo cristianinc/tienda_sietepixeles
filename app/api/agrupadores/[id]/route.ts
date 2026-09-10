@@ -1,25 +1,15 @@
-import { ensureProductOptionTables } from "@/lib/admin-options";
+import { authorizeAdminRequest } from "@/lib/auth/api-authorization";
 import { getDb } from "@/lib/db";
-
-type GroupBody = {
-  name?: string;
-  slug?: string;
-  description?: string;
-  image_url?: string;
-  sort_order?: number;
-  is_active?: boolean;
-  product_ids?: number[];
-};
+import { categoryGroupSchema } from "@/lib/validations/admin-options.schema";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await ensureProductOptionTables();
-  const { id } = await params;
-  const body = (await request.json()) as GroupBody;
-  const name = body.name?.trim();
-  const slug = body.slug?.trim();
+  const authorization = await authorizeAdminRequest();
+  if ("response" in authorization) return authorization.response;
 
-  if (!name || !slug) {
-    return Response.json({ ok: false, error: "Nombre y slug son obligatorios" }, { status: 400 });
+  const { id } = await params;
+  const parsed = categoryGroupSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return Response.json({ ok: false, errors: parsed.error.flatten() }, { status: 400 });
   }
 
   const db = getDb();
@@ -35,12 +25,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         returning *
       `,
       [
-        name,
-        slug,
-        body.description?.trim() || null,
-        body.image_url?.trim() || null,
-        Number(body.sort_order ?? 0),
-        body.is_active ?? true,
+        parsed.data.name,
+        parsed.data.slug,
+        parsed.data.description || null,
+        parsed.data.image_url || null,
+        parsed.data.sort_order ?? 0,
+        parsed.data.is_active ?? true,
         id,
       ],
     );
@@ -51,7 +41,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     await client.query("delete from category_group_products where group_id = $1", [id]);
-    for (const productId of body.product_ids ?? []) {
+    for (const productId of new Set(parsed.data.product_ids ?? [])) {
       await client.query(
         "insert into category_group_products (group_id, product_id) values ($1, $2) on conflict do nothing",
         [id, productId],
@@ -62,15 +52,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return Response.json({ ok: true, group: rows[0] });
   } catch (error) {
     await client.query("rollback");
-    const message = error instanceof Error ? error.message : "No se pudo actualizar el agrupador";
-    return Response.json({ ok: false, error: message }, { status: 500 });
+    console.error("Error al actualizar agrupador", error);
+    return Response.json({ ok: false, error: "No se pudo actualizar el agrupador" }, { status: 500 });
   } finally {
     client.release();
   }
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await ensureProductOptionTables();
+  const authorization = await authorizeAdminRequest();
+  if ("response" in authorization) return authorization.response;
+
   const { id } = await params;
   const db = getDb();
   const { rows } = await db.query("delete from category_groups where id = $1 returning id", [id]);

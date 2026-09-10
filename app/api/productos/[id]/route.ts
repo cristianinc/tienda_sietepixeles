@@ -1,5 +1,5 @@
+import { authorizeAdminRequest } from "@/lib/auth/api-authorization";
 import { getDb } from "@/lib/db";
-import { ensureProductOptionTables } from "@/lib/admin-options";
 import { updateProductSchema } from "@/lib/validations/product.schema";
 
 export async function GET(
@@ -7,7 +7,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  await ensureProductOptionTables();
   const db = getDb();
 
   const { rows } = await db.query(
@@ -58,8 +57,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authorization = await authorizeAdminRequest();
+  if ("response" in authorization) return authorization.response;
+
   const { id } = await params;
-  await ensureProductOptionTables();
   const body = await request.json();
   const parsed = updateProductSchema.safeParse(body);
 
@@ -109,8 +110,8 @@ export async function PATCH(
     return Response.json({ ok: true, product: productResult.rows[0] });
   } catch (error) {
     await client.query("rollback");
-    const message = error instanceof Error ? error.message : "Error al actualizar producto";
-    return Response.json({ ok: false, error: message }, { status: 500 });
+    console.error("Error al actualizar producto", error);
+    return Response.json({ ok: false, error: "No se pudo actualizar el producto" }, { status: 500 });
   } finally {
     client.release();
   }
@@ -120,6 +121,9 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authorization = await authorizeAdminRequest();
+  if ("response" in authorization) return authorization.response;
+
   const { id } = await params;
   const db = getDb();
   const result = await db.query("delete from products where id = $1 returning id", [id]);

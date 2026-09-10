@@ -1,4 +1,3 @@
-import { ensureProductOptionTables } from "@/lib/admin-options";
 import { getDb } from "@/lib/db";
 
 export type CategoryGroup = {
@@ -19,7 +18,6 @@ export type CategoryGroup = {
 };
 
 export async function getCategoryGroups(includeInactive = false) {
-  await ensureProductOptionTables();
   const db = getDb();
   const { rows } = await db.query(
     `

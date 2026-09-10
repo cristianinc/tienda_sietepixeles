@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { OptionManager } from "@/components/admin/OptionManager";
-import { ensureProductOptionTables } from "@/lib/admin-options";
 import { getDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminColorsPage() {
-  await ensureProductOptionTables();
   const db = getDb();
   const { rows } = await db.query("select * from product_colors order by name asc");
 

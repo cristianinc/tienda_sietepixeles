@@ -1,9 +1,8 @@
+import { authorizeAdminRequest } from "@/lib/auth/api-authorization";
 import { getDb } from "@/lib/db";
-import { ensureProductOptionTables } from "@/lib/admin-options";
 import { productSchema } from "@/lib/validations/product.schema";
 
 export async function GET() {
-  await ensureProductOptionTables();
   const db = getDb();
   const { rows } = await db.query(
     `
@@ -45,7 +44,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  await ensureProductOptionTables();
+  const authorization = await authorizeAdminRequest();
+  if ("response" in authorization) return authorization.response;
+
   const body = await request.json();
   const parsed = productSchema.safeParse(body);
 
@@ -92,8 +93,8 @@ export async function POST(request: Request) {
     return Response.json({ ok: true, product }, { status: 201 });
   } catch (error) {
     await client.query("rollback");
-    const message = error instanceof Error ? error.message : "Error al crear producto";
-    return Response.json({ ok: false, error: message }, { status: 500 });
+    console.error("Error al crear producto", error);
+    return Response.json({ ok: false, error: "No se pudo crear el producto" }, { status: 500 });
   } finally {
     client.release();
   }

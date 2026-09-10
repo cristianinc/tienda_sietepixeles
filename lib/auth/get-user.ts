@@ -1,15 +1,13 @@
-import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import { getAdminSession, sessionCookieName } from "@/lib/auth/session";
 
 export async function getUserRole() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const cookieStore = await cookies();
+  const user = await getAdminSession(cookieStore.get(sessionCookieName)?.value);
 
   if (!user) {
     return null;
   }
 
-  const role = (user.app_metadata.role as string | undefined) ?? "customer";
-  return { user, role };
+  return { user, role: "admin" };
 }

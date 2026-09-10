@@ -1,5 +1,4 @@
 import { getDb } from "@/lib/db";
-import { ensureProductOptionTables } from "@/lib/admin-options";
 
 export type CatalogVariant = {
   id: number;
@@ -27,7 +26,6 @@ export type CatalogProduct = {
 };
 
 export async function getCatalogProducts(limit?: number) {
-  await ensureProductOptionTables();
   const safeLimit = limit && limit > 0 ? Math.floor(limit) : undefined;
   const db = getDb();
   const query = `
@@ -76,7 +74,6 @@ export async function getCatalogProducts(limit?: number) {
 }
 
 export async function getProductBySlug(slug: string) {
-  await ensureProductOptionTables();
   const db = getDb();
   const { rows } = await db.query(
     `
