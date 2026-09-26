@@ -20,7 +20,7 @@ Create an administrator after applying migrations:
 ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD='replace-this-password' npm run local:admin
 ```
 
-The email must also be present in `ADMIN_EMAILS`. The first login enrolls TOTP MFA.
+The email must also be present in `ADMIN_EMAILS`. Login uses the administrator email and password and creates a revocable 12-hour session.
 
 ## Production
 

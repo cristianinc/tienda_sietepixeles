@@ -17,7 +17,6 @@ if (!adminEmails.includes(email)) throw new Error("ADMIN_EMAIL debe estar inclui
 const databaseUrl = process.env.DATABASE_URL ?? process.env.POSTGRES_URL_NON_POOLING ?? process.env.POSTGRES_URL;
 if (!databaseUrl) throw new Error("Define DATABASE_URL antes de crear el administrador.");
 
-const resetMfa = process.argv.includes("--reset-mfa");
 const usesSsl = databaseUrl.includes("sslmode=require");
 const normalizedUrl = new URL(databaseUrl);
 normalizedUrl.searchParams.delete("sslmode");
@@ -34,10 +33,9 @@ try {
      values ($1, $2)
      on conflict (email) do update
      set password_hash = excluded.password_hash,
-         totp_secret_encrypted = case when $3 then null else admin_users.totp_secret_encrypted end,
          is_active = true,
          updated_at = now()`,
-    [email, passwordHash, resetMfa],
+    [email, passwordHash],
   );
 } finally {
   await client.end();

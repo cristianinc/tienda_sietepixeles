@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: docker.io/library/postgres:16-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?Define POSTGRES_DB}
@@ -28,7 +28,6 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: ${DATABASE_URL:?Define DATABASE_URL with host db}
-      AUTH_SECRET: ${AUTH_SECRET:?Define AUTH_SECRET}
       ADMIN_EMAILS: ${ADMIN_EMAILS:?Define ADMIN_EMAILS}
       STORE_NAME: ${STORE_NAME:-Tienda}
       NEXT_PUBLIC_WHATSAPP_ORDER_PHONE: ${NEXT_PUBLIC_WHATSAPP_ORDER_PHONE:-}
